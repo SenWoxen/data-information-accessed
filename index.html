@@ -226,7 +226,8 @@ const DATASET = [
     nomorInduk: "2601480",
     telepon: "+62 821-1722-1342",
     email: "MirzaQws69Zc17vi@gmail.com",
-    passcode: "********"
+    passcode: "****",
+    info: "C3"
   },
   {
     urut: 23,
@@ -234,7 +235,8 @@ const DATASET = [
     nomorInduk: "2601486",
     telepon: "+62 813-9986-8780",
     email: "ZhovanSc69GqL23fXy@gmail.com",
-    passcode: "*******"
+    passcode: "***",
+    info: "A1"
   },
   {
     urut: 4,
@@ -242,7 +244,8 @@ const DATASET = [
     nomorInduk: "2601467",
     telepon: "+62 882-1338-6059",
     email: "AtharD69tRqZaS04dVnK@gmail.com",
-    passcode: "—"
+    passcode: "—",
+    info: "B4"
   },
   {
     urut: 26,
@@ -250,13 +253,14 @@ const DATASET = [
     nomorInduk: "2601489",
     telepon: "+62 881-0248-02822",
     email: "RaditpT69CzXo26sLje@gmail.com",
-    passcode: "*********"
+    passcode: "***",
+    info: "C6"
   }
 ];
 
 function renderTable(rows){
   let html = '<table><thead><tr>'
-    + '<th>Urut</th><th>Nama</th><th>Nomor Induk</th><th>Telepon</th><th>Alamat Email Pantauan</th><th>Passcode</th>'
+    + '<th>Urut</th><th>Nama</th><th>Nomor Induk</th><th>Telepon</th><th>Alamat Email Pantauan</th><th>Passcode</th><th>Info</th>'
     + '</tr></thead><tbody>';
   rows.forEach(r => {
     html += `<tr>
@@ -266,6 +270,7 @@ function renderTable(rows){
       <td>${r.telepon}</td>
       <td>${r.email}</td>
       <td class="mono-id">${r.passcode}</td>
+      <td class="mono-id">${r.info}</td>
     </tr>`;
   });
   html += '</tbody></table>';

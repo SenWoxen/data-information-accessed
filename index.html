@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SYSTEM ACCESS TERMINAL</title>
+<style>
+  :root{
+    --bg: #030906;
+    --bg2: #05130a;
+    --green: #33ff8c;
+    --green-dim: #16a35c;
+    --green-faint: #0b5a33;
+    --amber: #ffcf5c;
+    --red: #ff5c5c;
+    --font: 'Courier New', ui-monospace, Menlo, Consolas, monospace;
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: var(--bg);
+    font-family: var(--font);
+    color: var(--green);
+    overflow: hidden;
+  }
+  body{
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh;
+  }
+
+  .crt{
+    position:relative;
+    width: min(920px, 96vw);
+    height: min(640px, 92vh);
+    background: radial-gradient(ellipse at 50% 0%, var(--bg2), var(--bg) 75%);
+    border: 1px solid var(--green-faint);
+    border-radius: 8px;
+    box-shadow:
+      0 0 0 6px #000,
+      0 0 40px rgba(51,255,140,0.08),
+      inset 0 0 80px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display:flex;
+    flex-direction: column;
+  }
+  .crt::before{
+    content:"";
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(51,255,140,0.035) 0px,
+      rgba(51,255,140,0.035) 1px,
+      transparent 2px,
+      transparent 3px
+    );
+    pointer-events:none;
+    mix-blend-mode: overlay;
+  }
+  .crt::after{
+    content:"";
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+    pointer-events:none;
+  }
+
+  .titlebar{
+    flex: 0 0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--green-faint);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--green-dim);
+    background: linear-gradient(to bottom, rgba(51,255,140,0.05), transparent);
+  }
+  .dots{ display:flex; gap:6px; }
+  .dots span{ width:9px; height:9px; border-radius:50%; background: var(--green-faint); display:inline-block; }
+
+  .screen{
+    flex: 1 1 auto;
+    padding: 18px 20px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.55;
+    position: relative;
+    z-index: 1;
+  }
+  .screen::-webkit-scrollbar{ width: 8px; }
+  .screen::-webkit-scrollbar-thumb{ background: var(--green-faint); border-radius: 4px; }
+
+  .line{ white-space: pre-wrap; word-break: break-word; margin: 0 0 2px 0; }
+  .dim{ color: var(--green-dim); }
+  .amber{ color: var(--amber); }
+  .red{ color: var(--red); }
+  .bright{ color: var(--green); text-shadow: 0 0 6px rgba(51,255,140,0.5); }
+
+  .prompt-row{
+    display:flex; align-items:center; gap:8px;
+    margin-top: 4px;
+  }
+  .prompt-label{ color: var(--green-dim); white-space:nowrap; }
+  .input-wrap{
+    position:relative; flex:1; display:flex; align-items:center;
+  }
+  .field{
+    flex:1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--green);
+    font-family: var(--font);
+    font-size: 14px;
+    caret-color: transparent;
+  }
+  .cursor{
+    display:inline-block;
+    width: 8px; height: 16px;
+    background: var(--green);
+    margin-left: 2px;
+    animation: blink 1s steps(1) infinite;
+    vertical-align: -3px;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  table{
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+    font-size: 12.5px;
+  }
+  th, td{
+    border: 1px solid var(--green-faint);
+    padding: 6px 8px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  th{
+    color: var(--bg);
+    background: var(--green-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 11px;
+  }
+  tr:nth-child(even) td{ background: rgba(51,255,140,0.04); }
+  td.mono-id{ color: var(--amber); }
+
+  .bar-wrap{
+    background: var(--green-faint);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 4px 0 10px 0;
+  }
+  .bar-fill{
+    height:100%;
+    background: var(--green);
+    width: 0%;
+    transition: width 0.05s linear;
+  }
+
+  .badge{
+    display:inline-block;
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    padding: 1px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+
+  .footer-note{
+    flex: 0 0 auto;
+    padding: 6px 14px;
+    font-size: 10px;
+    color: var(--green-faint);
+    border-top: 1px solid var(--green-faint);
+    letter-spacing: 0.04em;
+  }
+
+  .hidden{ display:none; }
+</style>
+</head>
+<body>
+
+<div class="crt">
+  <div class="titlebar">
+    <span>root@simulasi-terminal : ~</span>
+    <div class="dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="screen" id="screen">
+    <div id="boot"></div>
+  </div>
+
+  <div class="footer-note">DATA BERIKUT ADALAH SIMULASI / FIKTIF — DIBUAT UNTUK DEMO ANTARMUKA, BUKAN DATA ORANG SUNGGUHAN.</div>
+</div>
+
+<script>
+const screen = document.getElementById('screen');
+
+function addLine(html, cls){
+  const div = document.createElement('div');
+  div.className = 'line' + (cls ? ' ' + cls : '');
+  div.innerHTML = html;
+  screen.appendChild(div);
+  screen.scrollTop = screen.scrollHeight;
+  return div;
+}
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+async function typeLine(text, cls, speed=12){
+  const div = addLine('', cls);
+  for(let i=0;i<text.length;i++){
+    div.textContent += text[i];
+    if(i % 2 === 0){ screen.scrollTop = screen.scrollHeight; }
+    await sleep(speed);
+  }
+  return div;
+}
+
+// ---------- DATA DUMMY (STATIS) ----------
+const DATASET = [
+  {
+    urut: 17,
+    nama: "MIRZA LINGGA PRATAMA",
+    nomorInduk: "2601480",
+    telepon: "+62 821-1722-1342",
+    email: "MirzaQws69Zc17vi@gmail.com",
+    passcode: "********"
+  },
+  {
+    urut: 23,
+    nama: "MUHAMMAD ZHOVANSYAH DWI HAIKAL AKBAR",
+    nomorInduk: "2601486",
+    telepon: "+62 813-9986-8780",
+    email: "ZhovanSc69GqL23fXy@gmail.com",
+    passcode: "*******"
+  },
+  {
+    urut: 4,
+    nama: "ATHAR PUTERA ARMANDA",
+    nomorInduk: "2601467",
+    telepon: "+62 882-1338-6059",
+    email: "AtharD69tRqZaS04dVnK@gmail.com",
+    passcode: "—"
+  },
+  {
+    urut: 26,
+    nama: "RADIT HERMAWAN",
+    nomorInduk: "2601489",
+    telepon: "+62 881-0248-02822",
+    email: "RaditpT69CzXo26sLje@gmail.com",
+    passcode: "*********"
+  }
+];
+
+function renderTable(rows){
+  let html = '<table><thead><tr>'
+    + '<th>Urut</th><th>Nama</th><th>Nomor Induk</th><th>Telepon</th><th>Alamat Email Pantauan</th><th>Passcode</th>'
+    + '</tr></thead><tbody>';
+  rows.forEach(r => {
+    html += `<tr>
+      <td>${r.urut}</td>
+      <td>${r.nama}</td>
+      <td class="mono-id">${r.nomorInduk}</td>
+      <td>${r.telepon}</td>
+      <td>${r.email}</td>
+      <td class="mono-id">${r.passcode}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  addLine(html);
+}
+
+async function progressBar(label, ms){
+  const div = addLine(label);
+  const wrap = document.createElement('div');
+  wrap.className = 'bar-wrap';
+  const fill = document.createElement('div');
+  fill.className = 'bar-fill';
+  wrap.appendChild(fill);
+  screen.appendChild(wrap);
+  screen.scrollTop = screen.scrollHeight;
+
+  const steps = 24;
+  for(let i=1;i<=steps;i++){
+    fill.style.width = (i/steps*100) + '%';
+    await sleep(ms/steps);
+  }
+}
+
+// ---------- BOOT SEQUENCE ----------
+async function boot(){
+  await typeLine('SYSTEM ACCESS TERMINAL v2.7 — SIMULASI DEMO', 'bright', 8);
+  await sleep(150);
+  await typeLine('Inisialisasi modul autentikasi...', 'dim', 6);
+  await progressBar('Memuat modul keamanan', 500);
+  await typeLine('Modul siap. Menunggu kredensial pengguna.', 'dim', 6);
+  await sleep(200);
+  addLine('<span class="dim">Catatan: seluruh data pada sesi ini adalah data buatan (dummy) untuk keperluan tampilan, bukan data pribadi asli siapa pun.</span>');
+  await sleep(150);
+  showLoginForm();
+}
+
+function showLoginForm(){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="prompt-row">
+      <span class="prompt-label">USERNAME &gt;</span>
+      <div class="input-wrap">
+        <input class="field" id="userField" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+    <div class="prompt-row hidden" id="passRow">
+      <span class="prompt-label">PASSWORD &gt;</span>
+      <div class="input-wrap">
+        <input class="field" id="passField" type="password" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+  `;
+  screen.appendChild(wrap);
+  const userField = wrap.querySelector('#userField');
+  const passRow = wrap.querySelector('#passRow');
+  const passField = wrap.querySelector('#passField');
+
+  userField.focus();
+  userField.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && userField.value.trim() !== ''){
+      userField.setAttribute('disabled','disabled');
+      passRow.classList.remove('hidden');
+      passField.focus();
+      screen.scrollTop = screen.scrollHeight;
+    }
+  });
+  passField.addEventListener('keydown', async (e) => {
+    if(e.key === 'Enter' && passField.value.trim() !== ''){
+      passField.setAttribute('disabled','disabled');
+      const uname = userField.value;
+      await handleLogin(uname);
+    }
+  });
+}
+
+async function handleLogin(uname){
+  await sleep(150);
+  await typeLine(`Memverifikasi kredensial untuk "${uname}"...`, 'dim', 8);
+  await progressBar('Menghubungkan ke basis data simulasi', 700);
+  await typeLine('AKSES DITERIMA.', 'bright', 10);
+  await sleep(150);
+  addLine('<span class="badge">STATUS: TERHUBUNG (MODE DEMO)</span>');
+  await sleep(200);
+  await typeLine('Mengambil catatan dummy...', 'dim', 8);
+  await progressBar('Membangun tabel data fiktif', 600);
+
+  renderTable(DATASET);
+
+  await sleep(200);
+  addLine('<span class="dim">— akhir catatan. Muat ulang halaman untuk sesi baru dengan data acak lain. —</span>');
+}
+
+boot();
+</script>
+
+</body>
+</html>
